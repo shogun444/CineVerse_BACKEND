@@ -11,7 +11,7 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({origin : "http://localhost:3000"}))
+app.use(cors({origin : "https://king-flix.vercel.app/"}))
 
 app.get('/', (req, res) => {
   res.status(200).json({ msg: "HealthCheck : Good" });
