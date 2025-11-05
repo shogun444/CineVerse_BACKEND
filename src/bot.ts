@@ -178,11 +178,17 @@ const cleanTitle = file_name
   .replace(/\.(mkv|mp4|avi|mov|wmv|flv|m4v|mpg|mpeg)$/i, "")
   // Replace dots and underscores with spaces
   .replace(/[_\.]+/g, " ")
-  // Remove everything after a year or junk tag (very strict cutoff)
+   // Remove special edition phrases like "10th Anniversary Edition"
+   .replace(/\b\d{1,2}(st|nd|rd|th)?\s*ann?iversar(y|y edition)?\b/gi, "")
+    // Remove known junk like resolution, codecs, etc.
   .replace(
     /\b((19|20)\d{2}|720p|1080p|2160p|480p|4k|8k|hdr10\+?|hdr|dv|dolby|vision|dts|truehd|atmos|web\s?dl|web\s?rip|webrip|bluray|brrip|hdrip|x264|x265|hevc|h\.?265|avc|aac2?\.?0?|ddp\S*|esubs?|dual\s?audio|tagalog|hindi|telugu|tamil|malayalam|korean|japanese|amzn|nf|psa|aeencodes|yts|hq|hc|ds4k|pahe|rarbg|extended|remastered|multi|proper|repack|imax|org|world|uncut|internal|regraded|10bit|xvid|h264|plus|\+|\d+)\b.*$/gi,
     ""
   )
+  // Remove special edition phrases like "10th Anniversary Edition"
+  .replace(/\b\d{1,2}(st|nd|rd|th)?\s*ann?iversar(y|y edition)?\b/gi, "")
+  // Remove extra words like 'edition' if left alone
+  .replace(/\bEdition\b/gi, "")
   // Remove brackets, dashes, and leftover punctuation
   .replace(/[\(\)\[\]\-]/g, " ")
   // Remove trailing symbols
@@ -190,7 +196,6 @@ const cleanTitle = file_name
   // Remove multiple spaces
   .replace(/\s+/g, " ")
   .trim();
-
 
 
        const yearMatch = file_name.match(/\b(19|20)\d{2}\b/);

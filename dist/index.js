@@ -6,7 +6,7 @@ import { prismaMovies } from "./prisma.js";
 import { seriesPrisma } from "./Prismaseries.js";
 dotenv.config();
 const app = express();
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors({ origin: ["http://localhost:3000", "https://cine-verse-rho-gold.vercel.app/"] }));
 app.get('/', (req, res) => {
     res.status(200).json({ msg: "HealthCheck : Good" });
 });
