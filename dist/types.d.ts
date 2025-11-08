@@ -1,17 +1,20 @@
-export type Video = {
+export type Movie = {
     file_id: string;
     file_name: string;
-    duration?: number | null;
-    file_size?: string | undefined | null;
+    populatiry: string | null;
+    file_size: string | undefined | null;
     thumbnail?: any;
     link?: string;
     message_id: number;
     chat_id?: string;
-    gramjs_message_id?: number;
+    language: string[];
+    genre?: string[];
     telegram_link: string;
+    releaseDat: string;
     mime_type?: string | undefined;
     width?: number;
     height?: number;
+    rating: string;
 };
 export type SeriesEpisode = {
     file_id: string;

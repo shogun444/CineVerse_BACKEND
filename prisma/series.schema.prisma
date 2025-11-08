@@ -14,18 +14,22 @@ datasource db1 {
   url      = env("TVSERIES_URL")
 }
 
+
+
+
+
 model TVSeries {
   id          Int        @id @default(autoincrement())
   tmdbId      Int        @unique
   chat_id      String
+  popularity String
   title       String
+  language String[] @default([])
+  genre String[] @default([])
   overview    String?
   posterPath  String?
-  backdropPath String?
-  releaseDate DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
+  releaseDate String?
+  rating String?
   seasons     Season[]
 }
 
@@ -34,12 +38,7 @@ model Season {
   seasonNumber Int
   chat_id      String
   tmdbId     Int?
-  title      String?
   overview   String?
-  airDate    DateTime?
-  posterPath String?
-  createdAt  DateTime   @default(now())
-
   // Relation
   series     TVSeries   @relation(fields: [seriesId], references: [id], onDelete: Cascade)
   seriesId   Int

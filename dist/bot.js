@@ -11,11 +11,11 @@ dotenv.config();
 // Initialize bot
 export const bot = new Telegraf(process.env.BOT_TOKEN);
 // Telegram user client (for >2GB)
-const apiId = Number(process.env.api_id);
-const apiHash = process.env.api_hash;
+const apiId = Number(process.env.apiId);
+const apiHash = process.env.apiHash;
 const stringSession = new StringSession(process.env.STRING_SESSION);
-const MOVIE_CHANNEL_ID = -1003106470314;
-const SERIES_CHANNEL_ID = -1003111405410;
+const MOVIE_CHANNEL_ID = -1003137257780;
+const SERIES_CHANNEL_ID = -1003259326946;
 // Create a Telegram user client instance (persistent)
 const userClient = new TelegramClient(stringSession, apiId, apiHash, { connectionRetries: 5 });
 // Connect once at startup
@@ -113,14 +113,9 @@ bot.on("channel_post", async (ctx) => {
             if (ctx.channelPost && "video" in ctx.channelPost && ctx.channelPost.video) {
                 const video = ctx.channelPost.video;
                 const file_id = video.file_id;
-                const thumbnail = video.thumbnail?.file_id || null;
                 const file_name = video.file_name;
                 const message_id = ctx.channelPost.message_id;
-                const duration = video.duration;
                 const file_size = video.file_size != null ? String(video.file_size) : null;
-                const mime_type = video.mime_type || "";
-                const width = video.width;
-                const height = video.height;
                 const chat_id = String(ctx.channelPost.chat.id);
                 const cleanTitle = file_name
                     // Remove file extension
@@ -151,37 +146,21 @@ bot.on("channel_post", async (ctx) => {
                 const tmdbResp = await axios.get(tmdbUrl);
                 const results = tmdbResp.data.results || [];
                 let tmdb_id = null;
+                let genre = null;
                 if (results.length > 0) {
                     const bestMatch = stringSimilarity.findBestMatch(cleanTitle.toLowerCase(), results.map((r) => r.title.toLowerCase()));
                     tmdb_id = results[bestMatch.bestMatchIndex]?.id || null || tmdbId;
                 }
                 console.log(`🎬 Matched TMDB ID for "${cleanTitle}": ${tmdb_id || "❌ Not found"}`);
-                let VidObj = {
-                    file_id,
-                    file_name,
-                    message_id,
-                    chat_id,
-                    duration,
-                    file_size,
-                    telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
-                    height,
-                    mime_type,
-                    width
-                };
                 await prismaMovies.videos.create({
                     data: {
                         file_id,
                         file_name,
                         message_id,
                         chat_id,
-                        duration,
                         file_size,
                         telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
-                        height,
-                        mime_type,
-                        width,
-                        thumbnail,
-                        tmdb_id
+                        tmdb_id,
                     }
                 });
                 console.log(`Channel video saved: ${file_name} TMDBID${tmdb_id}`);
@@ -192,11 +171,7 @@ bot.on("channel_post", async (ctx) => {
                 const thumbnail = doc.thumbnail?.file_id || null;
                 const file_name = doc.file_name || "";
                 const message_id = ctx.channelPost.message_id;
-                const duration = null; // Documents have no duration
                 const file_size = doc.file_size != null ? String(doc.file_size) : null;
-                const mime_type = doc.mime_type || "";
-                const width = null;
-                const height = null;
                 const chat_id = String(ctx.channelPost.chat.id);
                 const cleanTitle = file_name
                     // Remove file extension
@@ -231,14 +206,10 @@ bot.on("channel_post", async (ctx) => {
                         file_name,
                         message_id,
                         chat_id,
-                        duration,
                         file_size,
                         telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
-                        height,
-                        mime_type,
-                        width,
                         thumbnail,
-                        tmdb_id
+                        tmdb_id,
                     },
                 });
                 console.log(`Channel document saved: ${file_name}`);

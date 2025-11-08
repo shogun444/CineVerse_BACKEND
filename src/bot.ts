@@ -3,7 +3,7 @@ import { Api, TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
 import type { Update } from "telegraf/types";
 import dotenv from "dotenv";
-import type { SeriesEpisode, Video } from "./types.js";
+import { type SeriesEpisode, type Movie, TMDB_GENRES } from "./types.js";
 
 import axios, { AxiosError } from "axios";
 import stringSimilarity from "string-similarity";
@@ -17,12 +17,12 @@ dotenv.config();
 export const bot: Telegraf<Context<Update>> = new Telegraf(process.env.BOT_TOKEN as string);
 
 // Telegram user client (for >2GB)
-const apiId = Number(process.env.api_id);
-const apiHash = process.env.api_hash as string;
+const apiId = Number(process.env.apiId);
+const apiHash = process.env.apiHash as string;
 const stringSession = new StringSession(process.env.STRING_SESSION as string);
 
-const MOVIE_CHANNEL_ID = -1003106470314;
-const SERIES_CHANNEL_ID = -1003111405410;
+const MOVIE_CHANNEL_ID = -1003137257780;
+const SERIES_CHANNEL_ID = -1003259326946;
 // Create a Telegram user client instance (persistent)
 const userClient = new TelegramClient(stringSession, apiId, apiHash, { connectionRetries: 5 });
 
@@ -164,14 +164,9 @@ bot.on("channel_post", async (ctx) => {
       if (ctx.channelPost && "video" in ctx.channelPost && ctx.channelPost.video) {
       const video = ctx.channelPost.video;
       const file_id = video.file_id;
-      const thumbnail = video.thumbnail?.file_id || null;
       const file_name = video.file_name as string;
       const message_id = ctx.channelPost.message_id;
-      const duration = video.duration;
       const file_size = video.file_size != null ? String(video.file_size) : null;
-      const mime_type = video.mime_type || "";
-      const width = video.width;
-      const height = video.height;
       const chat_id = String(ctx.channelPost.chat.id) ;
 const cleanTitle = file_name
   // Remove file extension
@@ -211,45 +206,45 @@ const cleanTitle = file_name
     const results = tmdbResp.data.results || [];
 
     let tmdb_id: number | null = null;
-
+    let releaseDate: string =  ""
+    let genre = []
+    let popularity : string = ''
+    let language 
+    let rating
+    let thumbnail = ''
  if (results.length > 0) {
       const bestMatch = stringSimilarity.findBestMatch(
         cleanTitle.toLowerCase(),
         results.map((r: any) => r.title.toLowerCase())
       );
       tmdb_id = results[bestMatch.bestMatchIndex]?.id || null || tmdbId;
+       releaseDate = results.release_date || null
+      genre = results.genre_ids.map((id : number) => TMDB_GENRES[id]).filter(Boolean) || []
+      popularity = results.popularity
+      language = results.original_language
+      rating = results.vote_average
+      thumbnail = results.poster_path
     }
 
     console.log(`🎬 Matched TMDB ID for "${cleanTitle}": ${tmdb_id || "❌ Not found"}`);
 
-      let VidObj: Video = {
-        file_id,
-        file_name,
-        message_id,
-        chat_id,
-        duration,
-        file_size,
-        telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
-        height,
-        mime_type,
-        width
-      };
-
+     
      
       await prismaMovies.videos.create({
         data : {
-        file_id,
-          file_name,
-          message_id,
-          chat_id,
-          duration,
-          file_size,
-          telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
-          height,
-          mime_type,
-          width,
-          thumbnail,
-          tmdb_id
+        language,
+            rating,
+            file_id,
+            popularity,
+            genre,
+            releaseDate,
+            file_name,
+            message_id,
+            chat_id,
+            file_size,
+            telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
+            thumbnail,
+            tmdb_id,
         }
       });
       console.log(`Channel video saved: ${file_name} TMDBID${tmdb_id}`);
@@ -257,14 +252,9 @@ const cleanTitle = file_name
       else if ("document" in ctx.channelPost && ctx.channelPost.document) {
         const doc = ctx.channelPost.document;
         const file_id = doc.file_id;
-        const thumbnail = doc.thumbnail?.file_id || null;
         const file_name = doc.file_name || "";
         const message_id = ctx.channelPost.message_id;
-        const duration = null; // Documents have no duration
         const file_size = doc.file_size != null ? String(doc.file_size) : null;
-        const mime_type = doc.mime_type || "";
-        const width = null;
-        const height = null;
         const chat_id = String(ctx.channelPost.chat.id);
 
      
@@ -302,13 +292,24 @@ const cleanTitle = file_name
     const results = tmdbResp.data.results || [];
 
     let tmdb_id: number | null = null;
-
+    let releaseDate: string =  ""
+    let genre = []
+    let popularity : string = ''
+    let language 
+    let rating
+    let thumbnail
  if (results.length > 0) {
       const bestMatch = stringSimilarity.findBestMatch(
         cleanTitle.toLowerCase(),
         results.map((r: any) => r.title.toLowerCase())
       );
       tmdb_id = results[bestMatch.bestMatchIndex]?.id || null;
+      releaseDate = results.release_date || null
+      genre = results.genre_ids.map((id : number) => TMDB_GENRES[id]).filter(Boolean) || []
+      popularity = results.popularity
+      language = results.original_language
+      rating = results.vote_average
+      thumbnail = results.poster_path
     }
 
     console.log(`🎬 Matched TMDB ID for "${cleanTitle}": ${tmdb_id || "❌ Not found"}`);
@@ -316,18 +317,19 @@ const cleanTitle = file_name
 
         await prismaMovies.videos.create({
           data: {
+            language,
+            rating,
             file_id,
+            popularity,
+            genre,
+            releaseDate,
             file_name,
             message_id,
             chat_id,
-            duration,
             file_size,
             telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
-            height,
-            mime_type,
-            width,
             thumbnail,
-            tmdb_id
+            tmdb_id,
           },
         });
         console.log(`Channel document saved: ${file_name}`);

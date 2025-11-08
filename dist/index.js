@@ -10,6 +10,25 @@ app.use(cors({ origin: ["http://localhost:3000", "https://cine-verse-rho-gold.ve
 app.get('/', (req, res) => {
     res.status(200).json({ msg: "HealthCheck : Good" });
 });
+app.get('/latest-movies', async (req, res) => {
+    try {
+        const movies = await prismaMovies.videos.findMany({
+            orderBy: { id: 'desc' },
+            take: 20,
+            select: {
+                thumbnail: true,
+                tmdb_id: true,
+                telegram_link: true
+            }
+        });
+        res.set('Cache-Control', 'public, max-age=600, s-maxage=600');
+        res.status(200).json({ msg: 'Latest Movies', data: movies });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Internal Server Error' });
+    }
+});
 app.get('/allvideos', async (req, res) => {
     try {
         const data = await prismaMovies.videos.findMany({});

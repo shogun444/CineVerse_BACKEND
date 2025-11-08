@@ -1,24 +1,16 @@
-/*
-  Warnings:
-
-  - You are about to drop the `Videos` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropTable
-DROP TABLE "public"."Videos";
-
 -- CreateTable
 CREATE TABLE "TVSeries" (
     "id" SERIAL NOT NULL,
     "tmdbId" INTEGER NOT NULL,
     "chat_id" TEXT NOT NULL,
+    "popularity" TEXT NOT NULL,
     "title" TEXT NOT NULL,
+    "language" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "genre" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "overview" TEXT,
     "posterPath" TEXT,
-    "backdropPath" TEXT,
-    "releaseDate" TIMESTAMP(3),
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "releaseDate" TEXT,
+    "rating" TEXT,
 
     CONSTRAINT "TVSeries_pkey" PRIMARY KEY ("id")
 );
@@ -29,11 +21,7 @@ CREATE TABLE "Season" (
     "seasonNumber" INTEGER NOT NULL,
     "chat_id" TEXT NOT NULL,
     "tmdbId" INTEGER,
-    "title" TEXT,
     "overview" TEXT,
-    "airDate" TIMESTAMP(3),
-    "posterPath" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "seriesId" INTEGER NOT NULL,
 
     CONSTRAINT "Season_pkey" PRIMARY KEY ("id")

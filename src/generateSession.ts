@@ -5,8 +5,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const apiId = Number(process.env.api_id);
-const apiHash = process.env.api_hash;
+const apiId = Number(process.env.apiId);
+const apiHash = process.env.apiHash;
 const stringSession = new StringSession(""); // Empty for first time
 if (!apiId || !apiHash) {
   throw new Error("Missing API_ID or API_HASH in environment variables");
