@@ -392,17 +392,17 @@ let bestMatchSeries
 let language
 let rating
 let releaseDate
+let backdrop
 if (results.length > 0) {
-  const bestMatch = stringSimilarity.findBestMatch(
-    cleanTitle.toLowerCase(),
-    results.map((r: any) => r.name.toLowerCase())
-  );
+  const bestMatch = stringSimilarity.findBestMatch(cleanTitle.toLowerCase(),results.map((r: any) => (r.name || r.original_name ||"").toLowerCase() ));
+ 
   tmdbSeriesId = results[bestMatch.bestMatchIndex]?.id || null;
   popularity = results[bestMatch.bestMatchIndex].popularity
-  genre = results[bestMatch.bestMatchIndex].genres.name == null ?  results[bestMatch.bestMatchIndex].genres.id.map((id : number) => TMDB_GENRES[id]).filter(Boolean) || [] : results[bestMatch.bestMatchIndex].genres.name
+  genre = results[bestMatch.bestMatchIndex].genre_ids.map((id : number) => TMDB_GENRES[id]).filter(Boolean) || [] 
   language = results[bestMatch.bestMatchIndex].original_language
   rating =  results[bestMatch.bestMatchIndex].vote_average
   releaseDate =  results[bestMatch.bestMatchIndex].first_air_date
+  backdrop = results[bestMatch.bestMatchIndex].backdrop_path
    bestMatchSeries = results[bestMatch.bestMatchIndex]; 
 
 }
@@ -442,9 +442,11 @@ console.log(`📺 Matched TMDB Series ID for "${cleanTitle}": ${tmdbSeriesId}`);
     where: { tmdbId: episodeObj.tmdb_series_id },
     update: {},
     create: { 
-      genre,
-        language,
-        rating,
+      genre : genre,
+      backdrop,
+      popularity : String(popularity),
+        language : String(language),
+        rating : String(rating),
         releaseDate,
       tmdbId: episodeObj.tmdb_series_id,
       title: episodeObj.series_name,
@@ -470,6 +472,7 @@ console.log(`📺 Matched TMDB Series ID for "${cleanTitle}": ${tmdbSeriesId}`);
       seriesId: series.id,
        chat_id : chat_id,
       seasonNumber: episodeObj.season_number,
+   
     },
   });
 

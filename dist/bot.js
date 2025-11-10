@@ -295,14 +295,16 @@ bot.on("channel_post", async (ctx) => {
                 let language;
                 let rating;
                 let releaseDate;
+                let backdrop;
                 if (results.length > 0) {
-                    const bestMatch = stringSimilarity.findBestMatch(cleanTitle.toLowerCase(), results.map((r) => r.name.toLowerCase()));
+                    const bestMatch = stringSimilarity.findBestMatch(cleanTitle.toLowerCase(), results.map((r) => (r.name || r.original_name || "").toLowerCase()));
                     tmdbSeriesId = results[bestMatch.bestMatchIndex]?.id || null;
                     popularity = results[bestMatch.bestMatchIndex].popularity;
-                    genre = results[bestMatch.bestMatchIndex].genres.name == null ? results[bestMatch.bestMatchIndex].genres.id.map((id) => TMDB_GENRES[id]).filter(Boolean) || [] : results[bestMatch.bestMatchIndex].genres.name;
+                    genre = results[bestMatch.bestMatchIndex].genre_ids.map((id) => TMDB_GENRES[id]).filter(Boolean) || [];
                     language = results[bestMatch.bestMatchIndex].original_language;
                     rating = results[bestMatch.bestMatchIndex].vote_average;
                     releaseDate = results[bestMatch.bestMatchIndex].first_air_date;
+                    backdrop = results[bestMatch.bestMatchIndex].backdrop_path;
                     bestMatchSeries = results[bestMatch.bestMatchIndex];
                 }
                 if (!tmdbSeriesId) {
@@ -310,6 +312,7 @@ bot.on("channel_post", async (ctx) => {
                     return;
                 }
                 const seasonDetails = await getTvSeriesIdByNameWithRetry(tmdbSeriesId, seasonNumber);
+                console.log(seasonDetails);
                 const tmdbSeasonId = seasonDetails;
                 console.log(`📺 Matched TMDB Series ID for "${cleanTitle}": ${tmdbSeriesId}`);
                 const episodeData = await getEpisodeDetails(tmdbSeriesId, seasonNumber, episodeNumber);
@@ -338,9 +341,11 @@ bot.on("channel_post", async (ctx) => {
                     where: { tmdbId: episodeObj.tmdb_series_id },
                     update: {},
                     create: {
-                        genre,
-                        language,
-                        rating,
+                        genre: genre,
+                        backdrop,
+                        popularity: String(popularity),
+                        language: String(language),
+                        rating: String(rating),
                         releaseDate,
                         tmdbId: episodeObj.tmdb_series_id,
                         title: episodeObj.series_name,
