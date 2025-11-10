@@ -2,6 +2,7 @@ import { Context, Telegraf } from "telegraf";
 import { Api, TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
 import dotenv from "dotenv";
+import { TMDB_GENRES } from "./types.js";
 import axios, { AxiosError } from "axios";
 import stringSimilarity from "string-similarity";
 import { seriesPrisma } from "./Prismaseries.js";
@@ -146,20 +147,37 @@ bot.on("channel_post", async (ctx) => {
                 const tmdbResp = await axios.get(tmdbUrl);
                 const results = tmdbResp.data.results || [];
                 let tmdb_id = null;
-                let genre = null;
+                let releaseDate = "";
+                let genre = [];
+                let popularity = '';
+                let language;
+                let rating;
+                let thumbnail = '';
                 if (results.length > 0) {
                     const bestMatch = stringSimilarity.findBestMatch(cleanTitle.toLowerCase(), results.map((r) => r.title.toLowerCase()));
                     tmdb_id = results[bestMatch.bestMatchIndex]?.id || null || tmdbId;
+                    releaseDate = results.release_date || null;
+                    genre = results.genre_ids.map((id) => TMDB_GENRES[id]).filter(Boolean) || [];
+                    popularity = results.popularity;
+                    language = results.original_language;
+                    rating = results.vote_average;
+                    thumbnail = results.poster_path;
                 }
                 console.log(`🎬 Matched TMDB ID for "${cleanTitle}": ${tmdb_id || "❌ Not found"}`);
                 await prismaMovies.videos.create({
                     data: {
+                        language,
+                        rating,
                         file_id,
+                        popularity,
+                        genre,
+                        releaseDate,
                         file_name,
                         message_id,
                         chat_id,
                         file_size,
-                        telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
+                        telegram_link: `https://t.me/CineVerse9_bot?start=${message_id}`,
+                        thumbnail,
                         tmdb_id,
                     }
                 });
@@ -168,7 +186,6 @@ bot.on("channel_post", async (ctx) => {
             else if ("document" in ctx.channelPost && ctx.channelPost.document) {
                 const doc = ctx.channelPost.document;
                 const file_id = doc.file_id;
-                const thumbnail = doc.thumbnail?.file_id || null;
                 const file_name = doc.file_name || "";
                 const message_id = ctx.channelPost.message_id;
                 const file_size = doc.file_size != null ? String(doc.file_size) : null;
@@ -195,19 +212,39 @@ bot.on("channel_post", async (ctx) => {
                 const tmdbResp = await axios.get(tmdbUrl);
                 const results = tmdbResp.data.results || [];
                 let tmdb_id = null;
+                let releaseDate = "";
+                let genre = [];
+                let popularity = '';
+                let language;
+                let rating;
+                let backdrop;
+                let thumbnail;
                 if (results.length > 0) {
                     const bestMatch = stringSimilarity.findBestMatch(cleanTitle.toLowerCase(), results.map((r) => r.title.toLowerCase()));
                     tmdb_id = results[bestMatch.bestMatchIndex]?.id || null;
+                    releaseDate = results[bestMatch.bestMatchIndex].release_date || null;
+                    genre = results[bestMatch.bestMatchIndex].genre_ids.map((id) => TMDB_GENRES[id]);
+                    backdrop = results[bestMatch.bestMatchIndex].backdrop_path;
+                    popularity = results[bestMatch.bestMatchIndex].popularity;
+                    language = results[bestMatch.bestMatchIndex].original_language;
+                    rating = results[bestMatch.bestMatchIndex].vote_average;
+                    thumbnail = results[bestMatch.bestMatchIndex].poster_path;
                 }
                 console.log(`🎬 Matched TMDB ID for "${cleanTitle}": ${tmdb_id || "❌ Not found"}`);
                 await prismaMovies.videos.create({
                     data: {
+                        language,
+                        rating: String(rating),
                         file_id,
+                        popularity: String(popularity),
+                        genre,
+                        backdrop,
+                        releaseDate,
                         file_name,
                         message_id,
                         chat_id,
                         file_size,
-                        telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
+                        telegram_link: `https://t.me/CineVerse9_bot?start=${message_id}`,
                         thumbnail,
                         tmdb_id,
                     },
@@ -252,10 +289,20 @@ bot.on("channel_post", async (ctx) => {
                 console.log(`Series: "${cleanTitle}" | Season: ${seasonNumber} | Episode: ${episodeNumber}`);
                 const results = await getTvTmdbResultsWithRetry(cleanTitle);
                 let tmdbSeriesId = null;
+                let popularity;
+                let genre;
                 let bestMatchSeries;
+                let language;
+                let rating;
+                let releaseDate;
                 if (results.length > 0) {
                     const bestMatch = stringSimilarity.findBestMatch(cleanTitle.toLowerCase(), results.map((r) => r.name.toLowerCase()));
                     tmdbSeriesId = results[bestMatch.bestMatchIndex]?.id || null;
+                    popularity = results[bestMatch.bestMatchIndex].popularity;
+                    genre = results[bestMatch.bestMatchIndex].genres.name == null ? results[bestMatch.bestMatchIndex].genres.id.map((id) => TMDB_GENRES[id]).filter(Boolean) || [] : results[bestMatch.bestMatchIndex].genres.name;
+                    language = results[bestMatch.bestMatchIndex].original_language;
+                    rating = results[bestMatch.bestMatchIndex].vote_average;
+                    releaseDate = results[bestMatch.bestMatchIndex].first_air_date;
                     bestMatchSeries = results[bestMatch.bestMatchIndex];
                 }
                 if (!tmdbSeriesId) {
@@ -272,8 +319,7 @@ bot.on("channel_post", async (ctx) => {
                     file_name,
                     message_id,
                     chat_id,
-                    telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
-                    thumbnail: doc.thumbnail?.file_id || null,
+                    telegram_link: `https://t.me/CineVerse9_bot?start=${message_id}`,
                     file_size: doc.file_size != null ? String(doc.file_size) : null,
                     mime_type: doc.mime_type,
                     series_name: bestMatchSeries.name, // Use name from TMDB
@@ -292,6 +338,10 @@ bot.on("channel_post", async (ctx) => {
                     where: { tmdbId: episodeObj.tmdb_series_id },
                     update: {},
                     create: {
+                        genre,
+                        language,
+                        rating,
+                        releaseDate,
                         tmdbId: episodeObj.tmdb_series_id,
                         title: episodeObj.series_name,
                         chat_id: chat_id,

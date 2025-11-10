@@ -24,10 +24,11 @@ model TVSeries {
   chat_id      String
   popularity String
   title       String
-  language String[] @default([])
+  language String 
   genre String[] @default([])
   overview    String?
   posterPath  String?
+  backdrop String?
   releaseDate String?
   rating String?
   seasons     Season[]

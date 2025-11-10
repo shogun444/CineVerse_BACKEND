@@ -5,10 +5,11 @@ CREATE TABLE "TVSeries" (
     "chat_id" TEXT NOT NULL,
     "popularity" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "language" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "language" TEXT NOT NULL,
     "genre" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "overview" TEXT,
     "posterPath" TEXT,
+    "backdrop" TEXT,
     "releaseDate" TEXT,
     "rating" TEXT,
 

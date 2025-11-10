@@ -242,7 +242,7 @@ const cleanTitle = file_name
             message_id,
             chat_id,
             file_size,
-            telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
+            telegram_link: `https://t.me/CineVerse9_bot?start=${message_id}`,
             thumbnail,
             tmdb_id,
         }
@@ -293,10 +293,11 @@ const cleanTitle = file_name
 
     let tmdb_id: number | null = null;
     let releaseDate: string =  ""
-    let genre = []
+    let genre  : string[]= []
     let popularity : string = ''
     let language 
     let rating
+    let backdrop 
     let thumbnail
  if (results.length > 0) {
       const bestMatch = stringSimilarity.findBestMatch(
@@ -304,12 +305,14 @@ const cleanTitle = file_name
         results.map((r: any) => r.title.toLowerCase())
       );
       tmdb_id = results[bestMatch.bestMatchIndex]?.id || null;
-      releaseDate = results.release_date || null
-      genre = results.genre_ids.map((id : number) => TMDB_GENRES[id]).filter(Boolean) || []
-      popularity = results.popularity
-      language = results.original_language
-      rating = results.vote_average
-      thumbnail = results.poster_path
+      releaseDate = results[bestMatch.bestMatchIndex].release_date || null
+      
+   genre = results[bestMatch.bestMatchIndex].genre_ids.map((id: number) => TMDB_GENRES[id])
+      backdrop = results[bestMatch.bestMatchIndex].backdrop_path
+      popularity = results[bestMatch.bestMatchIndex].popularity
+      language = results[bestMatch.bestMatchIndex].original_language
+      rating = results[bestMatch.bestMatchIndex].vote_average
+      thumbnail = results[bestMatch.bestMatchIndex].poster_path
     }
 
     console.log(`🎬 Matched TMDB ID for "${cleanTitle}": ${tmdb_id || "❌ Not found"}`);
@@ -318,16 +321,17 @@ const cleanTitle = file_name
         await prismaMovies.videos.create({
           data: {
             language,
-            rating,
+            rating : String(rating),
             file_id,
-            popularity,
+            popularity: String(popularity),
             genre,
+            backdrop,
             releaseDate,
             file_name,
             message_id,
             chat_id,
             file_size,
-            telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
+            telegram_link: `https://t.me/CineVerse9_bot?start=${message_id}`,
             thumbnail,
             tmdb_id,
           },
@@ -382,14 +386,25 @@ console.log(`Series: "${cleanTitle}" | Season: ${seasonNumber} | Episode: ${epis
 const results = await getTvTmdbResultsWithRetry(cleanTitle);
 
 let tmdbSeriesId: number | null = null;
+let popularity
+let genre
 let bestMatchSeries 
+let language
+let rating
+let releaseDate
 if (results.length > 0) {
   const bestMatch = stringSimilarity.findBestMatch(
     cleanTitle.toLowerCase(),
     results.map((r: any) => r.name.toLowerCase())
   );
   tmdbSeriesId = results[bestMatch.bestMatchIndex]?.id || null;
+  popularity = results[bestMatch.bestMatchIndex].popularity
+  genre = results[bestMatch.bestMatchIndex].genres.name == null ?  results[bestMatch.bestMatchIndex].genres.id.map((id : number) => TMDB_GENRES[id]).filter(Boolean) || [] : results[bestMatch.bestMatchIndex].genres.name
+  language = results[bestMatch.bestMatchIndex].original_language
+  rating =  results[bestMatch.bestMatchIndex].vote_average
+  releaseDate =  results[bestMatch.bestMatchIndex].first_air_date
    bestMatchSeries = results[bestMatch.bestMatchIndex]; 
+
 }
 
 if (!tmdbSeriesId) {
@@ -406,10 +421,9 @@ console.log(`📺 Matched TMDB Series ID for "${cleanTitle}": ${tmdbSeriesId}`);
   file_name,
   message_id,
   chat_id,
-  telegram_link: `https://t.me/blake_videobot?start=${message_id}`,
-  thumbnail: doc.thumbnail?.file_id || null,
+  telegram_link: `https://t.me/CineVerse9_bot?start=${message_id}`,
   file_size: doc.file_size != null ? String(doc.file_size) : null,
-  mime_type: doc.mime_type,
+  mime_type: doc.mime_type, 
   series_name: bestMatchSeries.name, // Use name from TMDB
   tmdb_series_id: tmdbSeriesId,
   season_number: seasonNumber,
@@ -427,12 +441,17 @@ console.log(`📺 Matched TMDB Series ID for "${cleanTitle}": ${tmdbSeriesId}`);
    const series = await seriesPrisma.tVSeries.upsert({
     where: { tmdbId: episodeObj.tmdb_series_id },
     update: {},
-    create: {
+    create: { 
+      genre,
+        language,
+        rating,
+        releaseDate,
       tmdbId: episodeObj.tmdb_series_id,
       title: episodeObj.series_name,
       chat_id : chat_id,
       overview: bestMatchSeries.overview, // Make sure `bestMatchSeries` is the full series object from TMDB
       posterPath: bestMatchSeries.poster_path,
+    
     },
   });
 

@@ -11,9 +11,6 @@ export type Movie = {
     genre?: string[];
     telegram_link: string;
     releaseDat: string;
-    mime_type?: string | undefined;
-    width?: number;
-    height?: number;
     rating: string;
 };
 export type SeriesEpisode = {
@@ -40,4 +37,5 @@ export type SeriesEpisode = {
     runtime?: number;
     vote_average?: number;
 };
+export declare const TMDB_GENRES: Record<number, string>;
 //# sourceMappingURL=types.d.ts.map

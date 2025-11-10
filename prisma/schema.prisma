@@ -19,10 +19,11 @@ model Videos{
   file_id String @unique
   popularity String
   file_name String 
-  genre String[] @default([])
-  language String[] @default([])
+  genre  String[] @default([])
+  language String 
   file_size  String? @default("")
   thumbnail  String?
+  backdrop String?
   releaseDate  String?
   message_id Int?
   chat_id String     
