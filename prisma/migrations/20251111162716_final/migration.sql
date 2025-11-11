@@ -14,6 +14,7 @@ CREATE TABLE "Videos" (
     "chat_id" TEXT NOT NULL,
     "telegram_link" TEXT,
     "rating" TEXT,
+    "title" TEXT NOT NULL,
     "tmdb_id" INTEGER,
 
     CONSTRAINT "Videos_pkey" PRIMARY KEY ("id")

@@ -234,6 +234,7 @@ const cleanTitle = file_name
         data : {
         language,
             rating,
+            title : cleanTitle,
             file_id,
             popularity,
             genre,
@@ -326,6 +327,7 @@ const cleanTitle = file_name
             popularity: String(popularity),
             genre,
             backdrop,
+            title : cleanTitle,
             releaseDate,
             file_name,
             message_id,

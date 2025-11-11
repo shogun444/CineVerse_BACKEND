@@ -25,6 +25,7 @@ app.get('/latestMovies', async (req, res) => {
                 genre: true,
                 rating: true,
                 releaseDate: true,
+                title: true
             }
         });
         res.status(200).json({ msg: 'Latest Movies', data: movies });

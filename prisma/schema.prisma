@@ -29,6 +29,7 @@ model Videos{
   chat_id String     
   telegram_link  String?
   rating String?
+  title String
   tmdb_id       Int?
 }
 

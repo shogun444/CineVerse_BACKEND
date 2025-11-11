@@ -168,6 +168,7 @@ bot.on("channel_post", async (ctx) => {
                     data: {
                         language,
                         rating,
+                        title: cleanTitle,
                         file_id,
                         popularity,
                         genre,
@@ -239,6 +240,7 @@ bot.on("channel_post", async (ctx) => {
                         popularity: String(popularity),
                         genre,
                         backdrop,
+                        title: cleanTitle,
                         releaseDate,
                         file_name,
                         message_id,

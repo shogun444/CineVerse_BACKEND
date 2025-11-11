@@ -33,6 +33,7 @@ app.get('/latestMovies',async(req,res)=>{
      genre : true,
      rating : true,
      releaseDate :true,
+     title : true
       }
     })
 
