@@ -11,14 +11,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({origin : ["http://localhost:3000","https://cine-verse-rho-gold.vercel.app/"]}))
+app.use(cors({origin : ["http://localhost:3000","https://cinevers.vercel.app/"]}))
 
 app.get('/', (req, res) => {
   res.status(200).json({ msg: "HealthCheck : Good" });
 });
 
 
-app.get('/latest-movies',async(req,res)=>{
+app.get('/latestMovies',async(req,res)=>{
   try {
     const movies = await prismaMovies.videos.findMany({
       orderBy : { id : 'desc'},
@@ -26,12 +26,43 @@ app.get('/latest-movies',async(req,res)=>{
       select : {
      thumbnail : true,
      tmdb_id : true,
-     telegram_link : true
+     telegram_link : true,
+     backdrop : true,
+     popularity  :true,
+     language : true,
+     genre : true,
+     rating : true,
+     releaseDate :true,
       }
     })
 
-    res.set('Cache-Control', 'public, max-age=600, s-maxage=600')
     res.status(200).json({ msg: 'Latest Movies', data: movies });
+  } catch(error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Internal Server Error' });
+  }})
+
+app.get('/latestSeries',async(req,res)=>{
+  try {
+    const movies = await seriesPrisma.tVSeries.findMany({
+      orderBy : { id : 'desc'},
+      take : 20,
+      select : {
+     posterPath : true,
+     overview : true,
+    rating : true,
+    popularity : true,
+    language : true,
+    releaseDate : true,
+    backdrop : true,
+    genre:true,
+     title: true,
+     tmdbId: true,
+      }
+    })
+
+ 
+    res.status(200).json({ msg: 'Latest Series', data: movies });
   } catch(error) {
     console.error(error);
     res.status(500).json({ msg: 'Internal Server Error' });
