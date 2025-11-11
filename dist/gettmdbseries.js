@@ -69,7 +69,9 @@ export async function getTvSeriesIdByNameWithRetry(seriesTmdbId, seasonNumber) {
                 httpsAgent: new https.Agent({ keepAlive: false }),
             });
             const data = resp.data;
-            return data.id || null; // ✅ season.id directly from response
+            let id = data.id;
+            return { id };
+            // ✅ season.id directly from response
         }
         catch (err) {
             const e = err;

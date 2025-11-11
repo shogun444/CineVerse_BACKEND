@@ -65,7 +65,7 @@ export async function getEpisodeDetails(
 export async function getTvSeriesIdByNameWithRetry(
   seriesTmdbId: number,
   seasonNumber: number
-): Promise<number | null> {
+): Promise<any | null> {
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) throw new Error("TMDB_API_KEY missing");
 
@@ -79,7 +79,11 @@ export async function getTvSeriesIdByNameWithRetry(
         httpsAgent: new https.Agent({ keepAlive: false }),
       });
       const data = resp.data;
-      return data.id || null; // ✅ season.id directly from response
+     
+     
+      let id = data.id
+      return { id}; 
+      // ✅ season.id directly from response
     } catch (err) {
       const e = err as AxiosError;
       if (e.code === "ECONNRESET" && attempt < maxAttempts) {

@@ -39,7 +39,6 @@ model Season {
   seasonNumber Int
   chat_id      String
   tmdbId     Int?
-  overview   String?
   // Relation
   series     TVSeries   @relation(fields: [seriesId], references: [id], onDelete: Cascade)
   seriesId   Int

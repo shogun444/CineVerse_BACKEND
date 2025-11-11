@@ -412,7 +412,12 @@ if (!tmdbSeriesId) {
   return;
 }
 const seasonDetails = await getTvSeriesIdByNameWithRetry(tmdbSeriesId,seasonNumber)
-const tmdbSeasonId = seasonDetails
+if(seasonDetails === null){
+
+  return
+}
+
+const tmdbSeasonId = seasonDetails.id
 console.log(`📺 Matched TMDB Series ID for "${cleanTitle}": ${tmdbSeriesId}`);
   const episodeData = await getEpisodeDetails(tmdbSeriesId, seasonNumber, episodeNumber);
     // --- Compose SeriesEpisode object (type-safe) ---
@@ -434,7 +439,7 @@ console.log(`📺 Matched TMDB Series ID for "${cleanTitle}": ${tmdbSeriesId}`);
   episode_air_date: episodeData.air_date,
   episode_still: episodeData.still_path,
   runtime: episodeData.runtime,
-  tmdb_season_id : seasonDetails
+  tmdb_season_id : tmdbSeasonId
 };
 
 
